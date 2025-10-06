@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:payment_app/feature/checkout/data/payment_intent_model/payment_intent_model.dart';
+import 'package:payment_app/feature/checkout/data/repo/checkout_repo_imple.dart';
+import 'package:payment_app/feature/checkout/presentation/manger/payment_cubit.dart';
+import 'package:payment_app/feature/checkout/presentation/views/thank_you_view.dart';
 import 'package:payment_app/feature/checkout/presentation/views/widgets/payment_methods_list_view.dart';
 import 'package:payment_app/feature/checkout/presentation/views/widgets/total_price_widget.dart';
 
 import '../../../../../core/widgets/custom_button.dart';
+import '../../manger/payment_state.dart';
 import 'cart_info_item.dart';
 
 class MyCartViewBody extends StatelessWidget {
@@ -25,27 +31,39 @@ class MyCartViewBody extends StatelessWidget {
           const Divider(thickness: 2, height: 34, color: Color(0xffC7C7C7)),
           const TotalPrice(title: 'Total', value: r'$50.97'),
           const SizedBox(height: 16),
-          CustomButton(
-            text: 'Complete Payment',
-            onTap: () {
-              // Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-              //   return const PaymentDetailsView();
-              // }));
-
-              showModalBottomSheet(
-                context: context,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                builder: (context) {
-                  return const PaymentMethodsBottomSheet();
-                },
-              );
-            },
-          ),
+          BuildBlocConsummer(),
           const SizedBox(height: 12),
         ],
       ),
+    );
+  }
+}
+
+class BuildBlocConsummer extends StatelessWidget {
+  const BuildBlocConsummer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomButton(
+      text: 'Complete Payment',
+      onTap: () {
+        // Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        //   return const PaymentDetailsView();
+        // }));
+
+        showModalBottomSheet(
+          context: context,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          builder: (context) {
+            return const PaymentMethodsBottomSheet();
+          },
+        );
+      },
     );
   }
 }
@@ -55,7 +73,7 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.all(16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -63,9 +81,60 @@ class PaymentMethodsBottomSheet extends StatelessWidget {
           SizedBox(height: 16),
           PaymentMethodsListView(),
           SizedBox(height: 32),
-          CustomButton(text: 'Continue'),
+          BlocProvider(
+            create: (context) => PaymentCubit(CheckoutRepoImple()),
+            child: CustomBlocConsummer(),
+          ),
         ],
       ),
+    );
+  }
+}
+
+class CustomBlocConsummer extends StatelessWidget {
+  const CustomBlocConsummer({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<PaymentCubit, PaymentState>(
+      listener: (context, state) {
+        if (state is PaymentFailure) {
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state is PaymentSuccess) {
+          // ScaffoldMessenger.of(context).showSnackBar(
+          //   const SnackBar(
+          //     content: Text('Payment Successful'),
+          //     backgroundColor: Colors.green,
+          //   ),
+          // );
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (context) {
+                return const ThankYouView();
+              },
+            ),
+          );
+        }
+      },
+      builder: (context, state) {
+        return CustomButton(
+          onTap: () {
+            PaymentIntentModel paymentIntent = PaymentIntentModel(
+              amount: 10000,
+              currency: 'USD',
+            );
+            BlocProvider.of<PaymentCubit>(context).makePayment(paymentIntent);
+          },
+          text: 'Continue',
+          isLoading: state is PaymentLoading,
+        );
+      },
     );
   }
 }

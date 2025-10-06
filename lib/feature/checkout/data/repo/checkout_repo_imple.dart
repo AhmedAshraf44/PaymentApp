@@ -1,0 +1,26 @@
+import 'package:dartz/dartz.dart';
+import 'package:dio/dio.dart';
+import 'package:payment_app/core/errors/failure.dart';
+import 'package:payment_app/core/stripe_services.dart';
+import 'package:payment_app/feature/checkout/data/repo/checkout_repo.dart';
+
+import '../payment_intent_model/payment_intent_model.dart';
+
+class CheckoutRepoImple extends CheckoutRepo {
+  final StripeServices _stripeServices = StripeServices();
+  @override
+  Future<Either<Failure, void>> makePayment(
+    PaymentIntentModel paymentIntent,
+  ) async {
+    try {
+      await _stripeServices.makePayment(paymentIntent);
+      return const Right(null);
+    } catch (e) {
+      if (e is DioException) {
+        return Left(ServerFailure(e.message ?? ''));
+      } else {
+        return Left(ServerFailure(e.toString()));
+      }
+    }
+  }
+}
