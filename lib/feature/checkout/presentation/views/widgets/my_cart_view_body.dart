@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:payment_app/feature/checkout/data/payment_intent_model/payment_intent_model.dart';
 import 'package:payment_app/feature/checkout/data/repo/checkout_repo_imple.dart';
 import 'package:payment_app/feature/checkout/presentation/manger/payment_cubit.dart';
 import 'package:payment_app/feature/checkout/presentation/views/thank_you_view.dart';
@@ -8,6 +7,8 @@ import 'package:payment_app/feature/checkout/presentation/views/widgets/payment_
 import 'package:payment_app/feature/checkout/presentation/views/widgets/total_price_widget.dart';
 
 import '../../../../../core/widgets/custom_button.dart';
+import '../../../data/model/payment_intent_input_model.dart'
+    show PaymentIntentInputModel;
 import '../../manger/payment_state.dart';
 import 'cart_info_item.dart';
 
@@ -125,9 +126,10 @@ class CustomBlocConsummer extends StatelessWidget {
       builder: (context, state) {
         return CustomButton(
           onTap: () {
-            PaymentIntentModel paymentIntent = PaymentIntentModel(
+            PaymentIntentInputModel paymentIntent = PaymentIntentInputModel(
               amount: 10000,
               currency: 'USD',
+              customerId: 'cus_TCRhbobVW4B2Qd',
             );
             BlocProvider.of<PaymentCubit>(context).makePayment(paymentIntent);
           },

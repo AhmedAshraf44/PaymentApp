@@ -4,13 +4,13 @@ import 'package:payment_app/core/errors/failure.dart';
 import 'package:payment_app/core/stripe_services.dart';
 import 'package:payment_app/feature/checkout/data/repo/checkout_repo.dart';
 
-import '../payment_intent_model/payment_intent_model.dart';
+import '../model/payment_intent_input_model.dart';
 
 class CheckoutRepoImple extends CheckoutRepo {
   final StripeServices _stripeServices = StripeServices();
   @override
   Future<Either<Failure, void>> makePayment(
-    PaymentIntentModel paymentIntent,
+    PaymentIntentInputModel paymentIntent,
   ) async {
     try {
       await _stripeServices.makePayment(paymentIntent);
