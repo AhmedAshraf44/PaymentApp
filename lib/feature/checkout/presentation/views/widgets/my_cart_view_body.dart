@@ -1,16 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:payment_app/feature/checkout/data/repo/checkout_repo_imple.dart';
-import 'package:payment_app/feature/checkout/presentation/manger/payment_cubit.dart';
-import 'package:payment_app/feature/checkout/presentation/views/thank_you_view.dart';
-import 'package:payment_app/feature/checkout/presentation/views/widgets/payment_methods_list_view.dart';
 import 'package:payment_app/feature/checkout/presentation/views/widgets/total_price_widget.dart';
-
 import '../../../../../core/widgets/custom_button.dart';
-import '../../../data/model/payment_intent_input_model.dart'
-    show PaymentIntentInputModel;
-import '../../manger/payment_state.dart';
 import 'cart_info_item.dart';
+import 'payment_methods_bottom_sheet.dart';
 
 class MyCartViewBody extends StatelessWidget {
   const MyCartViewBody({super.key});
@@ -63,78 +55,6 @@ class BuildBlocConsummer extends StatelessWidget {
           builder: (context) {
             return const PaymentMethodsBottomSheet();
           },
-        );
-      },
-    );
-  }
-}
-
-class PaymentMethodsBottomSheet extends StatelessWidget {
-  const PaymentMethodsBottomSheet({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(height: 16),
-          PaymentMethodsListView(),
-          SizedBox(height: 32),
-          BlocProvider(
-            create: (context) => PaymentCubit(CheckoutRepoImple()),
-            child: CustomBlocConsummer(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class CustomBlocConsummer extends StatelessWidget {
-  const CustomBlocConsummer({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<PaymentCubit, PaymentState>(
-      listener: (context, state) {
-        if (state is PaymentFailure) {
-          Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage),
-              backgroundColor: Colors.red,
-            ),
-          );
-        } else if (state is PaymentSuccess) {
-          // ScaffoldMessenger.of(context).showSnackBar(
-          //   const SnackBar(
-          //     content: Text('Payment Successful'),
-          //     backgroundColor: Colors.green,
-          //   ),
-          // );
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(
-              builder: (context) {
-                return const ThankYouView();
-              },
-            ),
-          );
-        }
-      },
-      builder: (context, state) {
-        return CustomButton(
-          onTap: () {
-            PaymentIntentInputModel paymentIntent = PaymentIntentInputModel(
-              amount: 10000,
-              currency: 'USD',
-              customerId: 'cus_TCRhbobVW4B2Qd',
-            );
-            BlocProvider.of<PaymentCubit>(context).makePayment(paymentIntent);
-          },
-          text: 'Continue',
-          isLoading: state is PaymentLoading,
         );
       },
     );
